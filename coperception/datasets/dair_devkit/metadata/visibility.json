@@ -1,0 +1,11 @@
+{
+  "0": {"token": "0", "level": "truncated_state: 0, occluded_state: 0", "description": "non-truncated and fully visible"},
+  "1": {"token": "1", "level": "truncated_state: 0, occluded_state: 1", "description": "non-truncated and partially occluded"},
+  "2": {"token": "2", "level": "truncated state: 0, occluded_state: 2", "description": "non-truncated and largely occluded"},
+  "3": {"token": "3", "level": "truncated_state: 1, occluded_state: 0", "description": "transversely-truncated and fully visible"},
+  "4": {"token": "4", "level": "truncated_state: 1, occluded_state: 1", "description": "transversely-truncated and partially occluded"},
+  "5": {"token": "5", "level": "truncated state: 1, occluded_state: 2", "description": "transversely-truncated and largely occluded"},
+  "6": {"token": "6", "level": "truncated_state: 2, occluded_state: 0", "description": " longitudinally-truncated and fully visible"},
+  "7": {"token": "7", "level": "truncated_state: 2, occluded_state: 1", "description": "longitudinally-truncated and partially occluded"},
+  "8": {"token": "8", "level": "truncated state: 2, occluded_state: 2", "description": "longitudinally-truncated and largely occluded"}
+}

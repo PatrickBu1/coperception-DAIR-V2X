@@ -1,0 +1,35 @@
+{
+  "cooperative": {
+    "label_world": 6601,
+    "data_info.json": "json"
+  },
+  "infrastructure-side": {
+    "calib": {
+      "camera_intrinsic": 12424,
+      "virtuallidar_to_camera": 12424,
+      "virtuallidar_to_world": 12424
+    },
+    "image": 12424,
+    "velodyne": 12424,
+    "label": {
+      "camera": 12424,
+      "virtuallidar": 12424
+    },
+    "data_info.json": "json"
+  },
+  "vehicle-side": {
+    "calib": {
+      "camera_intrinsic": 15285,
+      "lidar_to_camera": 15285,
+      "lidar_to_novatel": 15285,
+      "novatel_to_world": 15285
+    },
+    "image": 15285,
+    "velodyne": 15285,
+    "label": {
+      "camera": 15285,
+      "lidar": 15285
+    },
+    "data_info.json": "json"
+  }
+}

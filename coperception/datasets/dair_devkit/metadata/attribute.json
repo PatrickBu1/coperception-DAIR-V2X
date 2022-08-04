@@ -1,0 +1,13 @@
+{
+  "0": {"token": "0", "name": "car", "description": "sedan/SUV"},
+  "1": {"token": "1", "name": "truck", "description": "semi truck/box truck"},
+  "2": {"token": "2", "name": "van", "description": "van-shaped cargo vehicle"},
+  "3": {"token": "3", "name": "bus", "description": "city bus/coach bus"},
+  "4": {"token": "4", "name": "pedestrian", "description": "human"},
+  "5": {"token": "5", "name": "cyclist", "description": "bicycle"},
+  "6": {"token": "6", "name": "tricyclist", "description": "3-wheeled cycle"},
+  "7": {"token": "7", "name": "motorcyclist", "description": "motorcycle"},
+  "8": {"token": "8", "name": "barrowlist", "description": "human with a wheeled cart"},
+  "9": {"token": "9", "name": "trafficcone", "description": "cone on the road"},
+  "10":  {"token": "10", "name":  "unknowns_movable", "description": "unknown movable category"}
+}

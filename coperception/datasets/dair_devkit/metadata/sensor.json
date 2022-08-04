@@ -1,0 +1,6 @@
+{
+  "0": {"token": "0", "channel": "CAM_FRONT_0", "modality": "camera"},
+  "1": {"token": "1", "channel": "CAM_FRONT_1", "modality": "camera"},
+  "2": {"token": "2", "channel": "LIDAR_TOP_0", "modality": "lidar"},
+  "3": {"token": "3", "channel": "LIDAR_TOP_1", "modality": "lidar"}
+}

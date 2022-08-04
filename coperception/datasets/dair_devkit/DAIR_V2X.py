@@ -53,7 +53,7 @@ class DAIR_V2X:
         if verbose:
             print("Loading DAIR-V2X tables...")
 
-        metadata_base_path = "./V2X_C_metadata"
+        metadata_base_path = "metadata"
         self.metadata_list = ["sample", "data", "ego_pose", "calibrated_sensor",
                      "sample_annotation", "attribute", "sensor", "visibility", "category"]
         self._metadata = dict()
@@ -83,12 +83,19 @@ class DAIR_V2X:
         for scene in self.scenes.values():
             tm = int(self._metadata["samples"][scene["first_sample_token"]]["timestamp"][0:10])
             duration = int(self._metadata["samples"][scene["last_sample_token"]]["timestamp"][0:10]) - tm
+            anns_count = 0
+            next_sample_token = scene["first_sample_token"]
+            while next_sample_token != "":
+                sample = self._metadata[next_sample_token]
+                anns_count += len(sample["anns"])
+                next_sample_token = sample["next"]
+
             print(scene["name"], end=", ")
             print("["+str(dt.datetime.utcfromtimestamp(tm))+"] ", end=", ")
             print(str(duration)+"s", end=", ")
-            # TODO
+            print("#anns:", anns_count)
 
-    def list_samples(self, token: str):
+    def list_sample(self, token: str):
         self._check_token_format()
         if token not in self._metadata["sample"]:
             raise KeyError("Token provided is not a sample token")
