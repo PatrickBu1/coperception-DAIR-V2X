@@ -2,6 +2,8 @@ import json
 import os
 import math
 import uuid
+from scipy.spatial.transform import Rotation as R
+import numpy as np
 
 
 def generate_samples_and_scenes(coop_json, veh_json, inf_json):
@@ -190,10 +192,10 @@ def generate_data(scene_dict, sample_dict, veh_json, inf_json):
             curr_inf_img_token = generate_uuid()
             curr_inf_pcd_token = generate_uuid()
 
-    return sample_dict, data
+    return sample_dict, data_dict
 
 
-def generate_ego_pose_and_calib(data_dict, veh_json, inf_json):
+def generate_ego_pose_and_calib(dataroot, data_dict, veh_json, inf_json):
     # sample_dict = json.load(open("../metadata/sample_2.json"))
     calib_dict = dict()
     ego_pose_dict = dict()
@@ -337,7 +339,7 @@ def vertices_to_rotation(point_matrix):
     return r.tolist()
 
 
-def generate_anns(coop_json, samples_json, data_json):
+def generate_anns(dataroot, coop_json, samples_json, data_json):
     type_dict = {
         "car": "0",
         "truck": '1',
@@ -412,18 +414,38 @@ def generate_anns(coop_json, samples_json, data_json):
 
         samples_json[sample_key]["anns"] = sample_anns
 
-    return samples_json, anns_dict
+        anns_dict_fh = dict(list(anns_dict.items())[:len(anns_dict) // 2])
+        anns_dict_lh = dict(list(anns_dict.items())[len(anns_dict) // 2:])
+
+    return samples_json, anns_dict_fh, anns_dict_lh
 
 
 if __name__ == "__main__":
-    os.chdir(r"C:\Users\jnynt\Desktop\AI4CE\data\cooperative-vehicle-infrastructure")
-    coop_json = json.load(open("cooperative\data_info.json"))
+    dataroot = r"C:\Users\jnynt\Desktop\AI4CE\data\cooperative-vehicle-infrastructure"
+    coop_json = json.load(open(os.path.join(dataroot, "cooperative\data_info.json")))
     coop_json = sorted(coop_json, key=lambda x: int(x["vehicle_pointcloud_path"][-10: -4]))
-    veh_json = json.load(open("vehicle-side/data_info.json"))
-    inf_json = json.load(open("infrastructure-side/data_info.json"))
+    veh_json = json.load(open(os.path.join(dataroot, "vehicle-side/data_info.json")))
+    inf_json = json.load(open(os.path.join(dataroot, "infrastructure-side/data_info.json")))
 
-    scene, sample = generate_samples_and_scenes(coop_json, veh_json, inf_json)
-    sample_2, data = generate_data(scene, sample, veh_json, inf_json)
-    ego_pose, calib, data_2 = generate_ego_pose_and_calib(data, veh_json, inf_json)
-    sample_3, anns = generate_anns(coop_json, sample_2, data_2)
+    # scene, sample = generate_samples_and_scenes(coop_json, veh_json, inf_json)
+    #
+    # sample_2, data = generate_data(scene, sample, veh_json, inf_json)
+    # ego_pose, calib, data_2 = generate_ego_pose_and_calib(data, veh_json, inf_json)
+
+    sample_2 = json.load(open("../metadata/sample_2.json"))
+    data_2 = json.load(open("../metadata/data_2.json"))
+
+    sample_3, anns_fh, anns_lh = generate_anns(dataroot, coop_json, sample_2, data_2)
+
+    with open("../metadata/sample_3.json", 'w') as out_sample:
+        json.dump(sample_3, out_sample)
+
+    with open("../metadata/anns.json", 'w') as out_anns_fh:
+        json.dump(anns_fh, out_anns_fh)
+
+    with open("../metadata/anns_lh.json", 'w') as out_anns_lh:
+        json.dump(anns_lh, out_anns_lh)
+
+
+
 

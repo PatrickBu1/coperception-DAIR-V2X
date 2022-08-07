@@ -4,6 +4,7 @@ import os
 import sys
 import time
 import re
+import copy
 import cv2
 import matplotlib.pyplot as plt
 import numpy as np
@@ -28,15 +29,6 @@ class DAIR_V2X:
         self.dataroot = dataroot
         self.verbose = verbose
 
-        if self.version not in ["V2X_C_coop", "V2X_C_inf", "V2X_C_veh", "V2X_I", "V2X_V"]:
-            raise AttributeError("version must be from the following:\n"
-                                 "\"V2X_C_coop:\" - cooperative data under DAIR-V2X-C\n"
-                                 "\"V2X_C_inf\" - infrastructure-only data under DAIR-V2X-C\n"
-                                 "\"V2X_C_veh\" - vehicle-only data under DAIR-V2X-C\n"
-                                 "\"V2X_I\" - infrastructure-only DAIR-V2X-I dataset\n"
-                                 "\"V2X_V\" - vehicle-only DAIR-V2X-V dataset\n"
-                                 )
-
         start_load_time = time.time()
         if verbose:
             print("Checking file integrity of data under dataroot...")
@@ -51,42 +43,71 @@ class DAIR_V2X:
             )
 
         if verbose:
+            print("======")
             print("Loading DAIR-V2X tables...")
 
         metadata_base_path = "metadata"
-        self.metadata_list = ["sample", "data", "ego_pose", "calibrated_sensor",
-                     "sample_annotation", "attribute", "sensor", "visibility", "category"]
-        self._metadata = dict()
+        self.metadata_map = {
+            "scene": "scene.json",
+            "sample": "sample_3.json",
+            "sample_data": "data_2.json",
+            "ego_pose": "ego_pose.json",
+            "calibrated_sensor": "calibrated_sensor.json",
+            "sample_annotation": "anns.json",
+            "attribute": "attribute.json",
+            "sensor": "sensor.json",
+            "visibility": "visibility.json"
+        }
 
-        self.scenes = json.load(open(os.path.join(metadata_base_path, "scenes.json")))
-        for name in self.metadata_list:
-            self._metadata[name] = json.load(open(os.path.join(metadata_base_path, name + ".json")))
+        self._meta = dict()
+
+        for name in self.metadata_map:
+            self._meta[name] = json.load(open(os.path.join(metadata_base_path, self.metadata_map[name])))
+
+        self._scene = copy.deepcopy(list(self._meta["scene"].values()))
+
+        anns_lh = json.load(open("./metadata/anns_lh.json"))
+        self._meta["sample_annotation"].update(anns_lh)
 
         load_time = round(time.time() - start_load_time, 3)
         if verbose:
-            for name in self.metadata_list:
-                print(len(self._metadata[name]), name)
+            print(len(self._scene), "scene, ")
+            for name in self.metadata_map:
+                print(len(self._meta[name]), name, end=",\n")
             print("Done loading in", load_time, "seconds")
+            print("======")
+
+    @property
+    def scene(self):
+        return copy.deepcopy(self._scene)
+
+    @property
+    def visibility(self):
+        return copy.copy(list(self._meta["visibility"].values()))
+
+    @property
+    def sensor(self):
+        return copy.copy(list(self._meta["sensor"].values()))
 
     def get(self, entity_name: str, token: str):
         if type(entity_name) != str:
             raise TypeError("entity name should be type string")
         self._check_token_format(token)
-        if entity_name not in self.metadata_list:
+        if entity_name not in self.metadata_map:
             raise KeyError("entity name is not valid")
 
-        data_unprocessed = self._metadata[entity_name][token]
+        data_unprocessed = self._meta[entity_name][token]
         # TODO: modify the unprocessed data based on its category
         return data_unprocessed
 
     def list_scenes(self):
-        for scene in self.scenes.values():
-            tm = int(self._metadata["samples"][scene["first_sample_token"]]["timestamp"][0:10])
-            duration = int(self._metadata["samples"][scene["last_sample_token"]]["timestamp"][0:10]) - tm
+        for scene in self._scene.values():
+            tm = int(str(self._meta["sample"][scene["first_sample_token"]]["timestamp"])[0:10])
+            duration = int(str(self._meta["sample"][scene["last_sample_token"]]["timestamp"])[0:10]) - tm
             anns_count = 0
             next_sample_token = scene["first_sample_token"]
             while next_sample_token != "":
-                sample = self._metadata[next_sample_token]
+                sample = self._meta["sample"][next_sample_token]
                 anns_count += len(sample["anns"])
                 next_sample_token = sample["next"]
 
@@ -96,11 +117,11 @@ class DAIR_V2X:
             print("#anns:", anns_count)
 
     def list_sample(self, token: str):
-        self._check_token_format()
-        if token not in self._metadata["sample"]:
+        self._check_token_format(token)
+        if token not in self._meta["sample"]:
             raise KeyError("Token provided is not a sample token")
 
-        sample = self._metadata["sample"][token]
+        sample = self._meta["sample"][token]
         print("Sample: ", sample["token"])
 
         for data_name in sample["data"]:
@@ -110,15 +131,23 @@ class DAIR_V2X:
 
         for ann_token in sample["anns"]:
             print("sample_annotation_token:", ann_token, end=", ")
-            category = self._metadata["attribute"][self._metadata["sample_annotation"]["attribute_token"]]["name"]
+            category = self._meta["attribute"][self._meta["sample_annotation"][ann_token]["attribute_token"]]["name"]
             print("category: ", category)
+
+    def list_attributes(self):
+        attr_counts = [0 for i in range(11)]
+        for ann_token in self._meta["sample_annotation"]:
+            ann = self._meta["sample_annotation"][ann_token]
+            attr_counts[int(ann["attribute_token"])] += 1
+        for i, count in enumerate(attr_counts):
+            print(self._meta["attribute"][str(i)]["name"] + ":", count)
 
     def _check_token_format(self, token: str):
         if type(token) != str or (len(token) != 32 and not bool(re.match("[a-z\d]", token))):
             raise err.FormatError("token is of the wrong format")
 
-    def _check_file_integrity(self, dataroot, version):
-        fs = json.load(open("./{}_metadata/file_structure.json".format(version)))
+    def _check_file_integrity(self, dataroot):
+        fs = json.load(open("./metadata/file_structure.json"))
         for root, dirs, files in os.walk(dataroot, topdown=True):
             curr_node = fs
             root_dir = root[len(dataroot):]
@@ -134,19 +163,17 @@ class DAIR_V2X:
             elif isinstance(curr_node, dict):
                 elems = list(curr_node.keys())
                 count = len(elems)
-
                 for folder in dirs:
                     if folder in elems:
                         elems.remove(folder)
                         count -= 1
-
                 for file in files:
                     if file in elems:
                         elems.remove(file)
                         count -= 1
-
                 if len(elems) != 0 or count < 0:
                     raise Exception
+
 
 
 
