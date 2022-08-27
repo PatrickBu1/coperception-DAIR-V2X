@@ -76,7 +76,7 @@ class Kitti2DBox(_BaseDataset):
             "person": 5,  # person sitting
             "cyclist": 6,
             "tram": 7,
-            "misc": 8,
+            "utils": 8,
             "dontcare": 9,
             "car_2": 1,
         }

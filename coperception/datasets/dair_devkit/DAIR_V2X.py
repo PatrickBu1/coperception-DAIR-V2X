@@ -1,22 +1,12 @@
 import json
-import math
 import os
 import sys
 import time
 import re
 import copy
-import cv2
-import matplotlib.pyplot as plt
-import numpy as np
-import sklearn.metrics
-from PIL import Image
-from matplotlib import rcParams
-from matplotlib.axes import Axes
-from pyquaternion import Quaternion
-from tqdm import tqdm
 import datetime as dt
 
-import misc.errors as err
+from .utils import errors as err
 
 if sys.version_info[0] != 3:
     raise ValueError("DAIR-V2X dev-kit only supports Python version 3.")
@@ -96,9 +86,8 @@ class DAIR_V2X:
         if entity_name not in self.metadata_map:
             raise KeyError("entity name is not valid")
 
-        data_unprocessed = self._meta[entity_name][token]
-        # TODO: modify the unprocessed data based on its category
-        return data_unprocessed
+        data = self._meta[entity_name][token]
+        return data
 
     def list_scenes(self):
         for scene in self._scene.values():
@@ -173,10 +162,3 @@ class DAIR_V2X:
                         count -= 1
                 if len(elems) != 0 or count < 0:
                     raise Exception
-
-
-
-
-
-
-

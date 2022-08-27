@@ -11,9 +11,9 @@ from coperception.utils.nuscenes_pc_util import (
     from_file_multisweep_warp2com_sample_data,
     get_instance_boxes_multisweep_sample_data
 )
-from nuscenes import NuScenes
-from nuscenes.utils.data_classes import LidarPointCloud
-
+# from nuscenes import NuScenes
+# from nuscenes.utils.data_classes import LidarPointCloud
+from coperception.datasets.dair_devkit import DAIR_V2X
 
 
 def check_folder(folder_name):
@@ -603,7 +603,8 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    nusc = NuScenes(version="v1.0-mini", dataroot=args.root, verbose=True)
+    # nusc = NuScenes(version="v1.0-mini", dataroot=args.root, verbose=True)
+    nusc = DAIR_V2X(dataroot=args.root, verbose=True)
     print("Total number of scenes:", len(nusc.scene))
     scene_begin = args.scene_begin
     scene_end = args.scene_end
